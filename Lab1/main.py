@@ -44,10 +44,12 @@
 
 # def occurencies_number(string1, string2):
 #     count = 0
-#     count = string2.count(string1)
+#     for i in range(len(string2) - len(string1) + 1):
+#         if string2[i:i + len(string1)] == string1:
+#             count += 1
 #     return count
-#
-# print(occurencies_number("pa", "copac in capac"))
+# 
+# print(occurencies_number("AA", "AAAA"))
 
 
 #Ex 4
