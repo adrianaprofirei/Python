@@ -146,9 +146,8 @@ def ex2():
                 print("Invalid withdrawal amount or insufficient funds.")
 
         def display_balance(self):
-            print(
-                f"Account Number: {self.account_number}\nAccount Holder: {self.account_holder}\nBalance: "
-                f"${self.balance}")
+            print(f"Account Number: {self.account_number}\nAccount Holder: {self.account_holder}\nBalance: "
+                  f"${self.balance}")
 
     class SavingsAccount(Account):
         def __init__(self, account_number, account_holder, balance=0, interest_rate=0.04, period=1):
@@ -302,6 +301,92 @@ def ex3():
 
 
 def ex4():
+    class Employee:
+        def __init__(self, name, employee_id, salary):
+            self.name = name
+            self.employee_id = employee_id
+            self.salary = salary
+
+        def display_info(self):
+            print(f"Name: {self.name}\nEmployee ID: {self.employee_id}\nSalary: ${self.salary}")
+
+        def take_vacation(self, days):
+            print(f"Taking {days} days of vacation.")
+
+        def update_salary(self, new_salary):
+            print(f"Updating {self.name}'s salary information to {new_salary}")
+            self.salary = new_salary
+
+    class Manager(Employee):
+        def __init__(self, name, employee_id, salary, department):
+            super().__init__(name, employee_id, salary)
+            self.department = department
+
+        def display_info(self):
+            super().display_info()
+            print(f"Department: {self.department}")
+
+        def organize_team_meeting(self):
+            print(f"{self.name} is organizing a team meeting.")
+
+        def approve_vacation(self):
+            print(f"{self.name} is approving vacation requests.")
+
+    class Engineer(Employee):
+        def __init__(self, name, employee_id, salary, programming_language):
+            super().__init__(name, employee_id, salary)
+            self.programming_language = programming_language
+
+        def display_info(self):
+            super().display_info()
+            print(f"Programming Language: {self.programming_language}")
+
+        def write_code(self):
+            print(f"{self.name} is writing code.")
+
+        def debug_code(self):
+            print(f"{self.name} is debugging code.")
+
+    class Salesperson(Employee):
+        def __init__(self, name, employee_id, salary, sales_target):
+            super().__init__(name, employee_id, salary)
+            self.sales_target = sales_target
+
+        def display_info(self):
+            super().display_info()
+            print(f"Sales Target: ${self.sales_target}")
+
+        def make_sales_pitch(self):
+            print(f"{self.name} is making a sales pitch.")
+
+        def close_deal(self):
+            print(f"{self.name} is closing a deal.")
+
+    manager1 = Manager("Calin Teodorescu", "21", 30000, "Programming")
+    engineer1 = Engineer("Stefan Paulet", "78", 15000, "Python")
+    salesperson1 = Salesperson("Eduard Zamfirache", "103", 75000, 100000)
+
+    manager1.display_info()
+    manager1.organize_team_meeting()
+    manager1.approve_vacation()
+    print()
+
+    engineer1.display_info()
+    engineer1.write_code()
+    engineer1.debug_code()
+    print()
+
+    salesperson1.display_info()
+    salesperson1.make_sales_pitch()
+    salesperson1.close_deal()
+    print()
+
+    engineer1.update_salary(20000)
+    engineer1.display_info()
+    print()
+
+
+def ex5():
     class Animal:
         def __init__(self, name, habitat, color):
             self.name = name
@@ -387,7 +472,7 @@ def ex4():
     print(shark.gill_respiration())
 
 
-def ex5():
+def ex6():
     class LibraryItem:
         def __init__(self, title, author, publication_year):
             self.title = title
@@ -497,3 +582,6 @@ ex4()
 print()
 print("\nExercise 5")
 ex5()
+print()
+print("\nExercise 6")
+ex6()
