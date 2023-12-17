@@ -31,6 +31,23 @@ def list_files(path):
     return file_count
 
 
+def get_files_extensions(path):
+    extensions_list = {}
+    extensions_size = {}
+    for root, dirs, files, in os.walk(path):
+        for file in files:
+            try:
+                extension = os.path.splitext(file)[1]
+                if extension:
+                    file_path = os.path.join(root, file)
+                    file_size = os.path.getsize(file_path)
+                    extensions_list[extension] = extensions_list.get(extension, 0) + 1
+                    extensions_size[extension] = extensions_size.get(extension, 0) + file_size
+            except (PermissionError, FileNotFoundError) as e:
+                print(f"Error accessing file: {file}: {e}")
+    return extensions_list, extensions_size
+
+
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         raise Exception("Wrong number of parameters")
@@ -51,3 +68,7 @@ if __name__ == "__main__":
             print(f"Partition {path} does not contain any file.")
         else:
             print(f"Partition {path} has {file_count} files.")
+        extensions_list, extensions_size = get_files_extensions(path)
+        for ext, count in extensions_list.items():
+            size = extensions_size.get(ext, 0)
+            print(f"{ext}: {count} with {size} bytes")
