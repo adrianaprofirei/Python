@@ -1,6 +1,10 @@
 import sys
+
+import numpy
 import psutil
 import os
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def get_partitions():
@@ -72,3 +76,21 @@ if __name__ == "__main__":
         for ext, count in extensions_list.items():
             size = extensions_size.get(ext, 0)
             print(f"{ext}: {count} with {size} bytes")
+
+        count_list = [count for ext, count in extensions_list.items()]
+        label_list = [ext for ext, count in extensions_list.items()]
+
+        exts = np.array(count_list)
+        labels = np.array(label_list)
+
+        total = np.sum(exts)
+        percentages = 100 * exts / total
+
+        label_percentages = [f'{label}\n{percent:.1f}%' for label, percent in zip(labels, percentages)]
+
+        patches, texts = plt.pie(exts, labels=label_percentages, radius=1.4)
+        legend = plt.legend(patches, label_percentages, loc="center", ncol=11)
+
+        plt.setp(legend.get_texts(), fontsize='small')  # Adjust 'large' as needed
+
+        plt.show()
