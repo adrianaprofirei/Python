@@ -14,15 +14,21 @@ def is_valid_partition(partition_arg, partition_list):
 
 
 def list_directories(path):
+    directory_count = 0
     for root, dirs, files in os.walk(path):
         for dir in dirs:
+            directory_count += 1
             print(os.path.join(root, dir))
+    return directory_count
 
 
 def list_files(path):
+    file_count = 0
     for root, dirs, files, in os.walk(path):
         for file in files:
+            file_count += 1
             print(os.path.join(root, file))
+    return file_count
 
 
 if __name__ == "__main__":
@@ -35,5 +41,13 @@ if __name__ == "__main__":
         partition_list = get_partitions()
         if not is_valid_partition(path, partition_list):
             raise Exception("Specified partition does not exist.")
-        # list_directories(path)
-        list_files(path)
+        directory_count = list_directories(path)
+        file_count = list_files(path)
+        if not directory_count:
+            print(f"Partition {path} does not contain any directory.")
+        else:
+            print(f"Partition {path} has {directory_count} directories.")
+        if not file_count:
+            print(f"Partition {path} does not contain any file.")
+        else:
+            print(f"Partition {path} has {file_count} files.")
