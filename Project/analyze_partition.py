@@ -19,7 +19,7 @@ def list_directories(path):
     directory_count = 0
     for root, dirs, files in os.walk(path):
         for dir in dirs[:]:
-            if dir.startswith('$') or dir == 'System Volume Information' or dir == '$RECYCLE.BIN':
+            if dir.startswith('$') or dir == 'System Volume Information':
                 dirs.remove(dir)
             else:
                 directory_count += 1
@@ -29,7 +29,10 @@ def list_directories(path):
 
 def list_files(path):
     file_count = 0
-    for root, dirs, files, in os.walk(path):
+    for root, dirs, files in os.walk(path):
+        for dir in dirs:
+            if dir.startswith('$'):
+                dirs.remove(dir)
         for file in files:
             file_count += 1
             print(os.path.join(root, file))
@@ -76,16 +79,19 @@ if __name__ == "__main__":
             partition_list = get_partitions()
             if not is_valid_partition(path, partition_list):
                 raise Exception("Specified partition does not exist.")
+
             directory_count = list_directories(path)
             file_count = list_files(path)
+
             if not directory_count:
                 print(f"Partition {path} does not contain any directory.")
             else:
                 print(f"Partition {path} has {directory_count} directories.")
             if not file_count:
-                raise FileNotFoundError(f"Partition {path} does not contain any file.")
+                raise FileNotFoundError(f"partition {path} does not contain any files.")
             else:
                 print(f"Partition {path} has {file_count} files.")
+
             extensions_list, extensions_size = get_files_extensions(path)
             for ext, count in extensions_list.items():
                 size = extensions_size.get(ext, 0)
@@ -107,6 +113,7 @@ if __name__ == "__main__":
             fig = px.sunburst(df, path=["extension"], values="size", hover_data=["converted_size"], title="File sizes by extension")
             fig.update_layout(margin=dict(l=0, r=0, t=30, b=0))
             fig.show()
+
     except ValueError as ve:
         print(f"Error: {ve}")
     except Exception as e:
