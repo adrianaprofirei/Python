@@ -51,6 +51,31 @@ def get_files_extensions(path):
                 print(f"Error accessing file: {file}: {e}")
     return extensions_list, extensions_size
 
+def count_chart_pie(count_list, label_list):
+    exts = np.array(count_list)
+    labels = np.array(label_list)
+    total = np.sum(exts)
+    percentages = 100 * exts / total
+    label_percentages = [f'{label}\n{percent:.3f}%' for label, percent in zip(labels, percentages)]
+    patches, texts = plt.pie(exts, labels=label_percentages, radius=1.4)
+    legend = plt.legend(patches, label_percentages, loc="center", ncol=11, title="Proportion of each file type "
+                                                                                 "expressed in # of files with same "
+                                                                                 "extension")
+    plt.setp(legend.get_texts(), fontsize='small')  # Adjust 'large' as needed
+    plt.show()
+
+
+def size_chart_pie(count_list, label_list):
+    exts = np.array(count_list)
+    labels = np.array(size_list)
+    total = np.sum(exts)
+    percentages = 100 * exts / total
+    label_percentages = [f'{label}\n{percent:.3f}%' for label, percent in zip(labels, percentages)]
+    patches, texts = plt.pie(exts, labels=label_percentages, radius=1.4)
+    legend = plt.legend(patches, label_percentages, loc="center", ncol=11, title="Proportion of each file type "
+                                                                                 "expressed in size")
+    plt.setp(legend.get_texts(), fontsize='small')  # Adjust 'large' as needed
+    plt.show()
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -79,18 +104,13 @@ if __name__ == "__main__":
 
         count_list = [count for ext, count in extensions_list.items()]
         label_list = [ext for ext, count in extensions_list.items()]
+        size_list = []
+        for ext, size in extensions_size.items():
+            size_list.append(size)
 
-        exts = np.array(count_list)
-        labels = np.array(label_list)
+        count_chart_pie(count_list, label_list)
+        size_chart_pie(count_list, label_list)
 
-        total = np.sum(exts)
-        percentages = 100 * exts / total
 
-        label_percentages = [f'{label}\n{percent:.1f}%' for label, percent in zip(labels, percentages)]
 
-        patches, texts = plt.pie(exts, labels=label_percentages, radius=1.4)
-        legend = plt.legend(patches, label_percentages, loc="center", ncol=11)
 
-        plt.setp(legend.get_texts(), fontsize='small')  # Adjust 'large' as needed
-
-        plt.show()
