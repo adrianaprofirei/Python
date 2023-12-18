@@ -18,9 +18,12 @@ def is_valid_partition(partition_arg, partition_list):
 def list_directories(path):
     directory_count = 0
     for root, dirs, files in os.walk(path):
-        for dir in dirs:
-            directory_count += 1
-            print(os.path.join(root, dir))
+        for dir in dirs[:]:
+            if dir.startswith('$') or dir == 'System Volume Information' or dir == '$RECYCLE.BIN':
+                dirs.remove(dir)
+            else:
+                directory_count += 1
+                print(os.path.join(root, dir))
     return directory_count
 
 
@@ -37,6 +40,9 @@ def get_files_extensions(path):
     extensions_list = {}
     extensions_size = {}
     for root, dirs, files, in os.walk(path):
+        for dir in dirs[:]:
+            if dir.startswith('$') or dir == 'System Volume Information':
+                dirs.remove(dir)
         for file in files:
             try:
                 extension = os.path.splitext(file)[1]
@@ -50,43 +56,58 @@ def get_files_extensions(path):
     return extensions_list, extensions_size
 
 
+def convert_bytes(size_in_bytes):
+    units = ["bytes", "KB", "MB", "GB", "TB"]
+    unit_index = 0
+    while size_in_bytes >= 1024 and unit_index < len(units) - 1:
+        size_in_bytes /= 1024.0
+        unit_index += 1
+    return round(size_in_bytes, 2), units[unit_index]
+
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        raise Exception("Wrong number of parameters")
-    else:
-        path = sys.argv[1]
-        if len(path) == 1:
-            path += ":\\"
-        partition_list = get_partitions()
-        if not is_valid_partition(path, partition_list):
-            raise Exception("Specified partition does not exist.")
-        directory_count = list_directories(path)
-        file_count = list_files(path)
-        if not directory_count:
-            print(f"Partition {path} does not contain any directory.")
+    try:
+        if len(sys.argv) != 2:
+            raise Exception("Wrong number of parameters; try using python analyze_partition.py <partition>")
         else:
-            print(f"Partition {path} has {directory_count} directories.")
-        if not file_count:
-            print(f"Partition {path} does not contain any file.")
-        else:
-            print(f"Partition {path} has {file_count} files.")
-        extensions_list, extensions_size = get_files_extensions(path)
-        for ext, count in extensions_list.items():
-            size = extensions_size.get(ext, 0)
-            print(f"{ext}: {count} with {size} bytes")
+            path = sys.argv[1]
+            if len(path) == 1:
+                path += ":\\"
+            partition_list = get_partitions()
+            if not is_valid_partition(path, partition_list):
+                raise Exception("Specified partition does not exist.")
+            directory_count = list_directories(path)
+            file_count = list_files(path)
+            if not directory_count:
+                print(f"Partition {path} does not contain any directory.")
+            else:
+                print(f"Partition {path} has {directory_count} directories.")
+            if not file_count:
+                raise FileNotFoundError(f"Partition {path} does not contain any file.")
+            else:
+                print(f"Partition {path} has {file_count} files.")
+            extensions_list, extensions_size = get_files_extensions(path)
+            for ext, count in extensions_list.items():
+                size = extensions_size.get(ext, 0)
+                print(f"{ext}: {count} with {size} bytes")
 
-        data = {"extension": [], "count": [], "size": []}
-        for ext, count in extensions_list.items():
-            size = extensions_size.get(ext, 0)
-            data["extension"].append(ext)
-            data["count"].append(count)
-            data["size"].append(size)
+            data = {"extension": [], "count": [], "size": [], "converted_size": []}
+            for ext, count in extensions_list.items():
+                size = extensions_size.get(ext, 0)
+                data["extension"].append(ext)
+                data["count"].append(count)
+                data["size"].append(size)
+                converted_size, unit = convert_bytes(size)
+                data["converted_size"].append(f"{converted_size} {unit}")
 
-        df = pd.DataFrame(data)  # data table
-        fig = px.sunburst(df, path=["extension"], values="count", title="File count by extension")
-        fig.update_layout(margin=dict(l=0, r=0, t=30, b=0))
-        fig.show()
-        fig = px.sunburst(df, path=["extension"], values="size", title="File sizes by extension")
-        fig.update_layout(margin=dict(l=0, r=0, t=30, b=0))
-        fig.show()
+            df = pd.DataFrame(data)
+            fig = px.sunburst(df, path=["extension"], values="count", title="File count by extension")
+            fig.update_layout(margin=dict(l=0, r=0, t=30, b=0))
+            fig.show()
+            fig = px.sunburst(df, path=["extension"], values="size", hover_data=["converted_size"], title="File sizes by extension")
+            fig.update_layout(margin=dict(l=0, r=0, t=30, b=0))
+            fig.show()
+    except ValueError as ve:
+        print(f"Error: {ve}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
