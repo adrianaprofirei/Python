@@ -3,6 +3,7 @@ import pandas as pd
 import psutil
 import os
 import plotly.express as px
+import matplotlib.pyplot as plt
 
 
 def get_partitions():
@@ -11,14 +12,14 @@ def get_partitions():
     return partition_list
 
 
-def is_valid_partition(partition_arg, partition_list):
-    return partition_arg in partition_list
+def is_valid_partition(partition, partition_list):
+    return partition in partition_list
 
 
 def list_directories(path):
     directory_count = 0
     for root, dirs, files in os.walk(path):
-        for dir in dirs[:]:
+        for dir in dirs:
             if dir.startswith('$') or dir == 'System Volume Information':
                 dirs.remove(dir)
             else:
@@ -93,26 +94,80 @@ if __name__ == "__main__":
                 print(f"Partition {path} has {file_count} files.")
 
             extensions_list, extensions_size = get_files_extensions(path)
+
+            total_count = 0
+            total_size = 0
+
             for ext, count in extensions_list.items():
                 size = extensions_size.get(ext, 0)
+                total_count = total_count + count
+                total_size = total_size + size
                 print(f"{ext}: {count} with {size} bytes")
 
+            print(total_size)
+            print(total_count)
+
             data = {"extension": [], "count": [], "size": [], "converted_size": []}
+            categories = []
+            value = []
+            value_size = []
+
+            other_count = 0
+            other_size = 0
+
             for ext, count in extensions_list.items():
                 size = extensions_size.get(ext, 0)
-                data["extension"].append(ext)
-                data["count"].append(count)
-                data["size"].append(size)
-                converted_size, unit = convert_bytes(size)
-                data["converted_size"].append(f"{converted_size} {unit}")
+                if count / total_count <= 0.0007 or size / total_size <= 0.0007:
+                    other_count += count
+                    other_size += size
+                else:
+                    data["extension"].append(ext)
+                    data["count"].append(count)
+                    data["size"].append(size)
+                    converted_size, unit = convert_bytes(size)
+                    data["converted_size"].append(f"{converted_size} {unit}")
+                    categories.append(ext)
+                    value.append(count)
+                    value_size.append(size)
+
+            # Add 'Other' category if there are extensions less than 3%
+            if other_count > 0 or other_size > 0:
+                data["extension"].append("Other")
+                data["count"].append(other_count)
+                data["size"].append(other_size)
+                converted_other_size, other_unit = convert_bytes(other_size)
+                data["converted_size"].append(f"{converted_other_size} {other_unit}")
+                categories.append("Other")
+                value.append(other_count)
+                value_size.append(other_size)
 
             df = pd.DataFrame(data)
             fig = px.sunburst(df, path=["extension"], values="count", title="File count by extension")
             fig.update_layout(margin=dict(l=0, r=0, t=30, b=0))
             fig.show()
-            fig = px.sunburst(df, path=["extension"], values="size", hover_data=["converted_size"], title="File sizes by extension")
+            fig = px.sunburst(df, path=["extension"], values="size", hover_data=["converted_size"],
+                              title="File sizes by extension")
             fig.update_layout(margin=dict(l=0, r=0, t=30, b=0))
             fig.show()
+
+            plt.figure(figsize=(8, 6))
+            plt.bar(categories, value, color='skyblue')
+            plt.xlabel('Extension name')
+            plt.ylabel('Count')
+            plt.title('File count by extension')
+            plt.xticks(rotation=90)
+            plt.tight_layout()
+            plt.show()
+
+            plt.figure(figsize=(8, 6))
+            plt.bar(categories, value_size, color='darkblue')
+            plt.xlabel('Extension name')
+            plt.ylabel('Count')
+            plt.title('File sizes by extension')
+            plt.xticks(rotation=90)  # Rotate x-axis labels for better visibility if needed
+            plt.tight_layout()
+            plt.show()
+
 
     except ValueError as ve:
         print(f"Error: {ve}")
