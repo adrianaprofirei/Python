@@ -130,7 +130,7 @@ if __name__ == "__main__":
                     value.append(count)
                     value_size.append(size)
 
-            # Add 'Other' category if there are extensions less than 3%
+            
             if other_count > 0 or other_size > 0:
                 data["extension"].append("Other")
                 data["count"].append(other_count)
@@ -164,7 +164,7 @@ if __name__ == "__main__":
             plt.xlabel('Extension name')
             plt.ylabel('Count')
             plt.title('File sizes by extension')
-            plt.xticks(rotation=90)  # Rotate x-axis labels for better visibility if needed
+            plt.xticks(rotation=90)
             plt.tight_layout()
             plt.show()
 
