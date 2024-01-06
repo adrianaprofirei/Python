@@ -69,6 +69,61 @@ def convert_bytes(size_in_bytes):
     return round(size_in_bytes, 2), units[unit_index]
 
 
+def model_first_sunburst(data):
+    data["extension"].append(ext)
+    data["count"].append(count)
+    data["size"].append(size)
+    converted_size, unit = convert_bytes(size)
+    data["converted_size"].append(f"{converted_size} {unit}")
+    categories.append(ext)
+    value.append(count)
+    value_size.append(size)
+
+
+def model_second_sunburst(data):
+    data["extension"].append("Other")
+    data["count"].append(other_count)
+    data["size"].append(other_size)
+    other_converted_size, other_unit = convert_bytes(other_size)
+    data["converted_size"].append(f"{other_converted_size} {other_unit}")
+    categories.append("Other")
+    value.append(other_count)
+    value_size.append(other_size)
+
+
+def first_plot_bar(categories, value):
+    plt.figure(figsize=(8, 6))
+    plt.bar(categories, value, color='skyblue')
+    plt.xlabel('Extension name')
+    plt.ylabel('Count')
+    plt.title('File count by extension')
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    plt.show()
+
+
+def second_plot_bar(categories, value_size):
+    plt.figure(figsize=(8, 6))
+    plt.bar(categories, value_size, color='darkblue')
+    plt.xlabel('Extension name')
+    plt.ylabel('Count')
+    plt.title('File sizes by extension')
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    plt.show()
+
+
+def sunburst_plot(data):
+    df = pd.DataFrame(data)
+    fig = px.sunburst(df, path=["extension"], values="count", title="File count by extension")
+    fig.update_layout(margin=dict(l=0, r=0, t=30, b=0))
+    fig.show()
+    fig = px.sunburst(df, path=["extension"], values="size", hover_data=["converted_size"],
+                      title="File sizes by extension")
+    fig.update_layout(margin=dict(l=0, r=0, t=30, b=0))
+    fig.show()
+
+
 if __name__ == "__main__":
     try:
         if len(sys.argv) != 2:
@@ -100,14 +155,12 @@ if __name__ == "__main__":
 
             for ext, count in extensions_list.items():
                 size = extensions_size.get(ext, 0)
-                total_count = total_count + count
-                total_size = total_size + size
+                total_count += count
+                total_size += size
                 print(f"{ext}: {count} with {size} bytes")
 
-            print(total_size)
-            print(total_count)
-
             data = {"extension": [], "count": [], "size": [], "converted_size": []}
+
             categories = []
             value = []
             value_size = []
@@ -121,53 +174,14 @@ if __name__ == "__main__":
                     other_count += count
                     other_size += size
                 else:
-                    data["extension"].append(ext)
-                    data["count"].append(count)
-                    data["size"].append(size)
-                    converted_size, unit = convert_bytes(size)
-                    data["converted_size"].append(f"{converted_size} {unit}")
-                    categories.append(ext)
-                    value.append(count)
-                    value_size.append(size)
+                    model_first_sunburst(data)
 
-            
             if other_count > 0 or other_size > 0:
-                data["extension"].append("Other")
-                data["count"].append(other_count)
-                data["size"].append(other_size)
-                converted_other_size, other_unit = convert_bytes(other_size)
-                data["converted_size"].append(f"{converted_other_size} {other_unit}")
-                categories.append("Other")
-                value.append(other_count)
-                value_size.append(other_size)
+                model_second_sunburst(data)
 
-            df = pd.DataFrame(data)
-            fig = px.sunburst(df, path=["extension"], values="count", title="File count by extension")
-            fig.update_layout(margin=dict(l=0, r=0, t=30, b=0))
-            fig.show()
-            fig = px.sunburst(df, path=["extension"], values="size", hover_data=["converted_size"],
-                              title="File sizes by extension")
-            fig.update_layout(margin=dict(l=0, r=0, t=30, b=0))
-            fig.show()
-
-            plt.figure(figsize=(8, 6))
-            plt.bar(categories, value, color='skyblue')
-            plt.xlabel('Extension name')
-            plt.ylabel('Count')
-            plt.title('File count by extension')
-            plt.xticks(rotation=90)
-            plt.tight_layout()
-            plt.show()
-
-            plt.figure(figsize=(8, 6))
-            plt.bar(categories, value_size, color='darkblue')
-            plt.xlabel('Extension name')
-            plt.ylabel('Count')
-            plt.title('File sizes by extension')
-            plt.xticks(rotation=90)
-            plt.tight_layout()
-            plt.show()
-
+            sunburst_plot(data)
+            first_plot_bar(categories, value)
+            second_plot_bar(categories, value_size)
 
     except ValueError as ve:
         print(f"Error: {ve}")
