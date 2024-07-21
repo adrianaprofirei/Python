@@ -1,1 +1,1 @@
-Python Repository contains the work this subject in the final year of faculty.
+Python repository contains the work this subject in the final year of faculty.
